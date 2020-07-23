@@ -96,9 +96,26 @@ det_file = os.path.join(detection_txt_path,"only_obj.txt")
 cls_folders = os.listdir(fpfn_crop_path)
 # print(type(folder_names))
 # print(cls_folders)
+
+'''use <>_fn folders'''
+# for folder in cls_folders:
+#     # print("FOLDER IS : " + folder)
+#     if len(folder.rsplit('_'))>2:
+#         # print("WILL ERASE : " + folder + "\n")
+#         cls_folders.remove(folder)
+#         # print(cls_folders)
+
+# for folder in cls_folders:
+#     # print("FOLDER IS : " + folder)
+#     if folder.rsplit('_')[1] != fpfn:
+#         # print("WILL ERASE : " + folder + "\n")
+#         cls_folders.remove(folder)
+#         # print(cls_folders)
+
+'''use <>_fn_full'''
 for folder in cls_folders:
     # print("FOLDER IS : " + folder)
-    if len(folder.rsplit('_'))>2:
+    if len(folder.rsplit('_'))<3:
         # print("WILL ERASE : " + folder + "\n")
         cls_folders.remove(folder)
         # print(cls_folders)
@@ -109,6 +126,7 @@ for folder in cls_folders:
         # print("WILL ERASE : " + folder + "\n")
         cls_folders.remove(folder)
         # print(cls_folders)
+
 
 print(cls_folders)
 
@@ -174,9 +192,13 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
                 print(confs[0][4])
                 print("**************************")
             image = cv2.imread(os.path.join(os.path.join(fpfn_crop_path,folder),fn)) #open image
-            cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,confs[0][1],confs[0][0]),  (70, 20), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+            # cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,confs[0][1],confs[0][0]),  (70, 20), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
             # cv2.rectangle(image,(int(confs[0][3][0]),int(confs[0][3][1])),(int(confs[0][3][2]),int(confs[0][3][3])),(0,0,255),1)
             # cv2.rectangle(image,(int(confs[0][4][0]),int(confs[0][4][1])),(int(confs[0][4][2]),int(confs[0][4][3])),(255,0,0),1)
+            for idx, conf in enumerate(confs, start=1):
+                # cv2.rectangle(image,(int(conf[3][0]),int(conf[3][1])),(int(conf[3][2]),int(conf[3][3])),(0,0,255),1)
+                cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,conf[1],conf[0]), (int(conf[4][0]+10), int(conf[4][1])+idx*20) , cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+                cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(255,0,0),3)
             cv2.imwrite(os.path.join(new_img_path,confs[0][2]+"_"+str(confs[0][0])+".jpg"),image) #save image to file
             
             if fn_cls.lower() == confs[0][1].lower(): #conf가 낮은 경우
@@ -201,7 +223,7 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
             missingCnt+=1
             image = cv2.imread(os.path.join(os.path.join(fpfn_crop_path,folder),fn)) #open image
             h, w, c = image.shape
-            cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,'n/a',0.00),  (70, 20), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+            cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,'n/a',0.00),  (int(box_fn[0]+10), int(box_fn[1]+20)), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
             # cv2.imshow("new",image)
             # cv2.waitKey(0)
             # print(os.path.join(new_img_path,fn_img_name))
