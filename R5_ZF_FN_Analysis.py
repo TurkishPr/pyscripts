@@ -98,33 +98,30 @@ result_folder = os.path.join(main_folder, "FN_Anlysis")
 if not os.path.exists(result_folder):
     os.mkdir(result_folder)
 
-fn_full_folders = os.listdir(fpfn_crop_path)
+fn_folders = os.listdir(fpfn_crop_path)
 fp_folders = os.listdir(fpfn_crop_path)
 # print(type(folder_names))
 # print(cls_folders)
 
 '''fp folders'''
-for folder in fp_folders:
+# for folder in fp_folders:
+#     if len(folder.rsplit('_'))>2:
+#         fp_folders.remove(folder)
+# for folder in fp_folders:
+#     if folder.rsplit('_')[1] == fpfn:
+#         fp_folders.remove(folder)
+# print(fp_folders)
+
+'''use <>_fn'''
+for folder in fn_folders:
     if len(folder.rsplit('_'))>2:
-        fp_folders.remove(folder)
+        fn_folders.remove(folder)
 
-for folder in fp_folders:
-    if folder.rsplit('_')[1] == fpfn:
-        fp_folders.remove(folder)
-
-print(fp_folders)
-
-'''use <>_fn_full'''
-for folder in fn_full_folders:
-    if len(folder.rsplit('_'))<3:
-        fn_full_folders.remove(folder)
-
-for folder in fn_full_folders:
+for folder in fn_folders:
     if folder.rsplit('_')[1] != fpfn:
-        fn_full_folders.remove(folder)
+        fn_folders.remove(folder)
 
-
-print(fn_full_folders)
+print(fn_folders)
 
 fn_stats = {}
 single_stat = {}
@@ -135,7 +132,7 @@ confCnt =0
 _IOU=0
 box_fn= []
 box_det= []
-for folder in fn_full_folders: #loop through each cropped_fpfn folder
+for folder in fn_folders: #loop through each cropped_fpfn folder
     fn_list = os.listdir(os.path.join(fpfn_crop_path,folder))
     fn_cls = folder.rsplit('_')[0].lower()
     if fn_cls == 'pedestrian':
@@ -256,7 +253,7 @@ for folder in fn_full_folders: #loop through each cropped_fpfn folder
 
 
 #PRINT STATISTICS
-for cls in fn_full_folders:
+for cls in fn_folders:
     fn_cls = cls.rsplit('_')[0].lower()
     if fn_cls == "pedestrian":
         fn_cls = 'ped'
