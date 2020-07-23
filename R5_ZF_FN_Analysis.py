@@ -189,17 +189,10 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
                 print(confs[0][4])
                 print("**************************")
             image = cv2.imread(os.path.join(os.path.join(fpfn_crop_path,folder),fn)) #open image
-            # cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,confs[0][1],confs[0][0]),  (70, 20), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+            cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,confs[0][1],confs[0][0]),  (70, 20), cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+
             # cv2.rectangle(image,(int(confs[0][3][0]),int(confs[0][3][1])),(int(confs[0][3][2]),int(confs[0][3][3])),(0,0,255),1)
             # cv2.rectangle(image,(int(confs[0][4][0]),int(confs[0][4][1])),(int(confs[0][4][2]),int(confs[0][4][3])),(255,0,0),1)
-            for idx, conf in enumerate(confs, start=1):
-                # cv2.rectangle(image,(int(conf[3][0]),int(conf[3][1])),(int(conf[3][2]),int(conf[3][3])),(0,0,255),1)
-                if conf[5] > 0.5 :
-                    cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(255,0,0),3)
-                else :
-                    cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(0,255,0),3)
-
-                cv2.putText(image, "[{} -> {} {:.5f}]".format(fn_cls,conf[1],conf[0]), (int(conf[4][0]+10), int(conf[4][1])+idx*20) , cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
            
             if float(confs[0][0])<float(0.9) and fn_cls.lower() == confs[0][1].lower(): #conf가 낮은 경우. 예컨데 gt가 car인데 car로 검출되었지만 0.9가 안될떄
                 fn_category_folder = os.path.join(new_img_path, fn_cls)
