@@ -94,7 +94,7 @@ detection_txt_path = os.path.join(main_folder,"detection_txt")
 fpfn_crop_path = os.path.join(main_folder,"fpfn_crop")
 det_file = os.path.join(detection_txt_path,"only_obj.txt")
 
-result_folder = os.path.join(main_folder, "FN_Anlysis")
+result_folder = os.path.join(main_folder, "FN_Analysis")
 if not os.path.exists(result_folder):
     os.mkdir(result_folder)
 
