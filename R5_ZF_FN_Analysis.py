@@ -93,42 +93,38 @@ fpfn = args.fpfn
 detection_txt_path = os.path.join(main_folder,"detection_txt")
 fpfn_crop_path = os.path.join(main_folder,"fpfn_crop")
 det_file = os.path.join(detection_txt_path,"only_obj.txt")
-cls_folders = os.listdir(fpfn_crop_path)
+
+result_folder = os.path.join(main_folder, "FN_Anlysis")
+if not os.path.exists(result_folder):
+    os.mkdir(result_folder)
+
+fn_full_folders = os.listdir(fpfn_crop_path)
+fp_folders = os.listdir(fpfn_crop_path)
 # print(type(folder_names))
 # print(cls_folders)
 
-'''use <>_fn folders'''
-# for folder in cls_folders:
-#     # print("FOLDER IS : " + folder)
-#     if len(folder.rsplit('_'))>2:
-#         # print("WILL ERASE : " + folder + "\n")
-#         cls_folders.remove(folder)
-#         # print(cls_folders)
+'''fp folders'''
+for folder in fp_folders:
+    if len(folder.rsplit('_'))>2:
+        fp_folders.remove(folder)
 
-# for folder in cls_folders:
-#     # print("FOLDER IS : " + folder)
-#     if folder.rsplit('_')[1] != fpfn:
-#         # print("WILL ERASE : " + folder + "\n")
-#         cls_folders.remove(folder)
-#         # print(cls_folders)
+for folder in fp_folders:
+    if folder.rsplit('_')[1] == fpfn:
+        fp_folders.remove(folder)
+
+print(fp_folders)
 
 '''use <>_fn_full'''
-for folder in cls_folders:
-    # print("FOLDER IS : " + folder)
+for folder in fn_full_folders:
     if len(folder.rsplit('_'))<3:
-        # print("WILL ERASE : " + folder + "\n")
-        cls_folders.remove(folder)
-        # print(cls_folders)
+        fn_full_folders.remove(folder)
 
-for folder in cls_folders:
-    # print("FOLDER IS : " + folder)
+for folder in fn_full_folders:
     if folder.rsplit('_')[1] != fpfn:
-        # print("WILL ERASE : " + folder + "\n")
-        cls_folders.remove(folder)
-        # print(cls_folders)
+        fn_full_folders.remove(folder)
 
 
-print(cls_folders)
+print(fn_full_folders)
 
 fn_stats = {}
 single_stat = {}
@@ -139,13 +135,13 @@ confCnt =0
 _IOU=0
 box_fn= []
 box_det= []
-for folder in cls_folders: #loop through each cropped_fpfn folder
+for folder in fn_full_folders: #loop through each cropped_fpfn folder
     fn_list = os.listdir(os.path.join(fpfn_crop_path,folder))
     fn_cls = folder.rsplit('_')[0].lower()
     if fn_cls == 'pedestrian':
         fn_cls = 'ped'
     print(fn_cls + "**************************************************************************************************************")
-    new_img_path = os.path.join(main_folder,fn_cls+"_conf")
+    new_img_path = os.path.join(result_folder,fn_cls+"_conf")
     if not os.path.exists(new_img_path):
         os.mkdir(new_img_path)
     for fn in fn_list: #loop through the list of images inside cropped_fpfn folders
@@ -167,7 +163,6 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
                 if fn_img_name == gt_jpgName : #only if the jpg names are identical we attempt looking at the IOU.
                     _IOU=0 #reset IOU var
                     det_cls =line.rsplit('/')[1].rsplit(' ')[1]
-                    # print(det_cls)
                     conf =float(line.rsplit('/')[1].rsplit(' ')[2]) 
                     xmin2=float(line.rsplit('/')[1].rsplit(' ')[3])
                     ymin2=float(line.rsplit('/')[1].rsplit(' ')[4])
@@ -184,10 +179,15 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
         if found_fn:
             # print("BEFORE : {}".format(confs))
             confs = sorted(confs, key=lambda t : t[0], reverse=True) #sort the conf list
-            print("AFTER : {}".format(confs))
-            if float(confs[0][0])>=0.9 :
+            # print("AFTER : {}".format(confs))
+            # print("GT {} DET {}".format(fn_cls, confs[0][1]))
+           
+        #    '''here im trying to see if FN images with conf > 0.9 are actually in FP'''
+            if float(confs[0][0])>=float(0.9) and fn_cls == confs[0][1].lower() : #if the detection result matching with FN has greater than 0.9 conf score, something is wrong
                 print("**************************")
+                print("GT {} DET {}".format(fn_cls, confs[0][1]))
                 print("IOU IS : {:.3f}".format(float(confs[0][5])))
+                print("SCORE IS : {:.5f}".format(float(confs[0][0])))
                 print(confs[0][3])
                 print(confs[0][4])
                 print("**************************")
@@ -197,17 +197,36 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
             # cv2.rectangle(image,(int(confs[0][4][0]),int(confs[0][4][1])),(int(confs[0][4][2]),int(confs[0][4][3])),(255,0,0),1)
             for idx, conf in enumerate(confs, start=1):
                 # cv2.rectangle(image,(int(conf[3][0]),int(conf[3][1])),(int(conf[3][2]),int(conf[3][3])),(0,0,255),1)
-                cv2.putText(image, "[{} -> {} {:.2f}]".format(fn_cls,conf[1],conf[0]), (int(conf[4][0]+10), int(conf[4][1])+idx*20) , cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
-                cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(255,0,0),3)
-            cv2.imwrite(os.path.join(new_img_path,confs[0][2]+"_"+str(confs[0][0])+".jpg"),image) #save image to file
-            
-            if fn_cls.lower() == confs[0][1].lower(): #conf가 낮은 경우
+                if conf[5] > 0.5 :
+                    cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(255,0,0),3)
+                else :
+                    cv2.rectangle(image,(int(conf[4][0]),int(conf[4][1])),(int(conf[4][2]),int(conf[4][3])),(0,255,0),3)
+
+                cv2.putText(image, "[{} -> {} {:.5f}]".format(fn_cls,conf[1],conf[0]), (int(conf[4][0]+10), int(conf[4][1])+idx*20) , cv2.FONT_HERSHEY_PLAIN, 1, (48, 48, 255), 2 )
+           
+            if float(confs[0][0])<float(0.9) and fn_cls.lower() == confs[0][1].lower(): #conf가 낮은 경우. 예컨데 gt가 car인데 car로 검출되었지만 0.9가 안될떄
+                fn_category_folder = os.path.join(new_img_path, fn_cls)
+                if not os.path.exists(fn_category_folder):
+                    os.mkdir(fn_category_folder)
+                cv2.imwrite(os.path.join(fn_category_folder,confs[0][2]+"_"+str(confs[0][0])+".jpg"),image) #save image to file
                 if fn_cls in single_stat:
                     single_stat[fn_cls] +=1
                 else:
                     single_stat[fn_cls] = 1
-                    
-            else: # 다른 cls가 더 conf가 높은 경우
+            elif float(confs[0][0])>=float(0.9) and fn_cls.lower() == confs[0][1].lower(): #xavier와 pc의 차이로 xavier에서는 FN인데 pc에서는 검출 되었을때. Ignore 처리
+                fn_category_folder = os.path.join(new_img_path, "ignore")
+                if not os.path.exists(fn_category_folder):
+                    os.mkdir(fn_category_folder)
+                cv2.imwrite(os.path.join(fn_category_folder,confs[0][2]+"_"+str(confs[0][0])+".jpg"),image) #save image to file
+                if "ignore" in single_stat:
+                    single_stat["ignore"] +=1
+                else:
+                    single_stat["ignore"] = 1
+            else: # 다른 cls가 더 conf가 높은 경우. 예컨데 gt가 car인데 truck으로 검출되어 bus conf가 더 높은경우
+                fn_category_folder = os.path.join(new_img_path, confs[0][1].lower())
+                if not os.path.exists(fn_category_folder):
+                    os.mkdir(fn_category_folder)
+                cv2.imwrite(os.path.join(fn_category_folder,confs[0][2]+"_"+str(confs[0][0])+".jpg"),image) #save image to file
                 if confs[0][1].lower() in single_stat:
                     single_stat[confs[0][1].lower()] +=1
                 else:
@@ -216,6 +235,9 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
 
 
         if not found_fn: #if fn is not found in the detection txt files, it is most likely not detected at all
+            fn_category_folder = os.path.join(new_img_path, "missing")
+            if not os.path.exists(fn_category_folder):
+                os.mkdir(fn_category_folder)
             if 'missing' in single_stat:
                 single_stat['missing'] +=1
             else:
@@ -227,14 +249,14 @@ for folder in cls_folders: #loop through each cropped_fpfn folder
             # cv2.imshow("new",image)
             # cv2.waitKey(0)
             # print(os.path.join(new_img_path,fn_img_name))
-            cv2.imwrite(os.path.join(new_img_path,gt_jpgName[:-4]+"_"+str(missingCnt)+".jpg"),image) #save image to file
+            cv2.imwrite(os.path.join(fn_category_folder,gt_jpgName[:-4]+"_"+str(missingCnt)+".jpg"),image) #save image to file
 
     fn_stats[fn_cls] = single_stat
     single_stat = {}
 
 
 #PRINT STATISTICS
-for cls in cls_folders:
+for cls in fn_full_folders:
     fn_cls = cls.rsplit('_')[0].lower()
     if fn_cls == "pedestrian":
         fn_cls = 'ped'
