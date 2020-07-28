@@ -68,7 +68,7 @@ def IOU(boxA, boxB):
 od_class = {
     'ped': 1,
     'rider':2,
-    'car':3, 
+    'car':3,
     'truck':4,
     'bus':5,
     'TSC':6,
@@ -143,15 +143,15 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
         os.mkdir(new_img_path)
     for fn in fn_list: #loop through the list of images inside cropped_fpfn folders
         fnGtCount+=1
-        baseName = fn.rsplit('jpg')[0]
-        fn_img_name = baseName + 'jpg'
+        baseName = fn.rsplit('png')[0]
+        fn_img_name = baseName + 'png'
         print(fn_img_name)
-        xmin=float(fn.rsplit('jpg')[1].rsplit('_')[1]) #parse file name for the coordinates of fn
-        ymin=float(fn.rsplit('jpg')[1].rsplit('_')[2])
-        xmax=float(fn.rsplit('jpg')[1].rsplit('_')[3])
-        ymax=float(fn.rsplit('jpg')[1].rsplit('_')[4][:-1])
+        xmin=float(fn.rsplit('png')[1].rsplit('_')[1]) #parse file name for the coordinates of fn
+        ymin=float(fn.rsplit('png')[1].rsplit('_')[2])
+        xmax=float(fn.rsplit('png')[1].rsplit('_')[3])
+        ymax=float(fn.rsplit('png')[1].rsplit('_')[4][:-4])
         box_fn = [xmin,ymin,xmax,ymax] # box of FN image in question. FN bbox is Test GT bbox
-        
+
         found_fn =False
         with open(det_file, "r") as file: #loop through every line of detection txt.
             for line in file:
@@ -160,7 +160,7 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
                 if fn_img_name == gt_jpgName : #only if the jpg names are identical we attempt looking at the IOU.
                     _IOU=0 #reset IOU var
                     det_cls =line.rsplit('/')[1].rsplit(' ')[1]
-                    conf =float(line.rsplit('/')[1].rsplit(' ')[2]) 
+                    conf =float(line.rsplit('/')[1].rsplit(' ')[2])
                     xmin2=float(line.rsplit('/')[1].rsplit(' ')[3])
                     ymin2=float(line.rsplit('/')[1].rsplit(' ')[4])
                     xmax2=float(line.rsplit('/')[1].rsplit(' ')[5])
@@ -168,7 +168,7 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
                     box_det = [xmin2,ymin2,xmax2,ymax2]
                     _IOU = IOU(box_det,box_fn) #calculate the IOU between FN and Det Object of the same image.
                     # print(_IOU)
-                
+
                     if _IOU>0.5:
                         confs.append([conf, det_cls, fn_img_name, box_fn, box_det, _IOU]) #only if IOU is greater 0.5, we append to conf list
                         found_fn=True
@@ -178,7 +178,7 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
             confs = sorted(confs, key=lambda t : t[0], reverse=False) #sort the conf list
             # print("AFTER : {}".format(confs))
             # print("GT {} DET {}".format(fn_cls, confs[0][1]))
-           
+
         #    '''here im trying to see if FN images with conf > 0.9 are actually in FP'''
             if float(confs[0][0])>=float(0.9) and fn_cls == confs[0][1].lower() : #if the detection result matching with FN has greater than 0.9 conf score, something is wrong
                 print("**************************")
@@ -193,8 +193,7 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
 
             # cv2.rectangle(image,(int(confs[0][3][0]),int(confs[0][3][1])),(int(confs[0][3][2]),int(confs[0][3][3])),(0,0,255),1)
             # cv2.rectangle(image,(int(confs[0][4][0]),int(confs[0][4][1])),(int(confs[0][4][2]),int(confs[0][4][3])),(255,0,0),1)
-           
-            if float(confs[0][0])<float(0.9) and fn_cls.lower() == confs[0][1].lower(): #conf가 낮은 경우. 예컨데 gt가 car인데 car로 검출되었지만 0.9가 안될떄
+            if float(confs[0][0])<float(0.9) and fn_cls.lower() == confs[0][1].lower(): 
                 fn_category_folder = os.path.join(new_img_path, fn_cls)
                 if not os.path.exists(fn_category_folder):
                     os.mkdir(fn_category_folder)
@@ -203,7 +202,8 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
                     single_stat[fn_cls] +=1
                 else:
                     single_stat[fn_cls] = 1
-            elif float(confs[0][0])>=float(0.9) and fn_cls.lower() == confs[0][1].lower(): #xavier와 pc의 차이로 xavier에서는 FN인데 pc에서는 검출 되었을때. Ignore 처리
+
+            elif float(confs[0][0])>=float(0.9) and fn_cls.lower() == confs[0][1].lower(): 
                 fn_category_folder = os.path.join(new_img_path, "ignore")
                 if not os.path.exists(fn_category_folder):
                     os.mkdir(fn_category_folder)
@@ -212,7 +212,7 @@ for folder in fn_folders: #loop through each cropped_fpfn folder
                     single_stat["ignore"] +=1
                 else:
                     single_stat["ignore"] = 1
-            else: # 다른 cls가 더 conf가 높은 경우. 예컨데 gt가 car인데 truck으로 검출되어 bus conf가 더 높은경우
+            else: 
                 fn_category_folder = os.path.join(new_img_path, confs[0][1].lower())
                 if not os.path.exists(fn_category_folder):
                     os.mkdir(fn_category_folder)
