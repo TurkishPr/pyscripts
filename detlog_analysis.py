@@ -77,60 +77,84 @@ gt_trunc_stats = {
 args = parser.parse_args()
 main_folder = ""
 if type(args.mf) == type(None):
-    main_folder = r"Z:\seongjin.lee\udb\GODTrain200929_refine_result_ver3"
+    # main_folder = r"Z:\seongjin.lee\eval\M551_improvement\only_conf\1600000"
+    # output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\\prefix_only_conf_model_output"
+    # tag = "conf_only"
+
+
+    main_folder = r"C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\prefix_0.3_eval\Eval"
+    output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\\prefix_0.3_model_output"
+    tag = "0_3"
+
+    # main_folder = r"Z:\seongjin.lee\eval\M551_improvement\original\final"
+    # output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\original_model_output"
+    # tag = "original"
+
+    # main_folder = r"Z:\seongjin.lee\udb\GODTrain200929_refine_result_ver3"
+    # output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics"
+
     # main_folder = r"C:\Users\Yoseop\Desktop\erase\test\detlog"
 else:
     main_folder = args.mf
 print(main_folder)
 
 count =0
-total = 411791
+total = 411719
 # print(len(glob.glob(main_folder+"\\*")))
-for src in glob.glob(main_folder+"\\*"): #conf, trunc, occ scores
-    # print(src)
+
+# '''
+# detection log per class
+# '''
+for src in glob.glob(main_folder+"\\*.txt"): #conf, trunc, occ scores
+    name = src.rsplit("\\")[-1][:-4].upper()
+    if "PROPOSAL" in name or "TS" in name or "TL" in name:
+        continue
     f = open(src, "r")
+    print(src)
+    print(name)
+
     for line in f:
         info = line.split()
-        det_cls = int(info[0])
         conf = float(info[1])
-        det_box = [float(info[2]),float(info[3]),float(info[4]),float(info[5])]
-        conf = float(info[1])
-        occ = float(info[6])
-        trunc = float(info[7])
-        name = classes[det_cls]
-        
+
         gt_conf_stats[name].append(conf)
         gt_conf_stats["ALL"].append(conf)
 
-        if occ != -1 and occ != 0:
-            gt_occ_stats[name].append(occ)
-            gt_occ_stats["ALL"].append(occ)
 
-        if trunc != -1 and trunc != 0:
-            gt_trunc_stats[name].append(trunc)
-            gt_trunc_stats["ALL"].append(trunc)
 
-        # #prefix
-        # # print(classes[det_cls], conf, det_box, occ, trunc)
-        # # # print(str(conf)[2])
-        # # gt_stats[name][str(conf)[2]] += 1
+'''
+detection log per image
+'''
+# for src in glob.glob(main_folder+"\\*"): #conf, trunc, occ scores
+#     # print(src)
+#     f = open(src, "r")
+#     for line in f:
+#         info = line.split()
+#         det_cls = int(info[0])
+#         conf = float(info[1])
+#         det_box = [float(info[2]),float(info[3]),float(info[4]),float(info[5])]
+#         conf = float(info[1])
+#         occ = float(info[6])
+#         trunc = float(info[7])
+#         name = classes[det_cls]
+        
+#         gt_conf_stats[name].append(conf)
+#         gt_conf_stats["ALL"].append(conf)
 
-        #postfix
-        # if str(conf)[0] != '1' and str(conf)[2] == '0':
-        #     print(classes[det_cls], conf, det_box, occ, trunc)
-        # # print(str(conf)[2])
-        # if str(conf)[0] == '1':
-        #     gt_stats[name]['9'] += 1
-        # else:
-        #     gt_stats[name][str(conf)[2]] += 1
-    count +=1
-    f.close()
-    print("{} : {}".format(total,count), end ='\r')
+#         if occ != -1 and occ != 0:
+#             gt_occ_stats[name].append(occ)
+#             gt_occ_stats["ALL"].append(occ)
 
-for key1, value1 in gt_stats.items():
-    print(key1)
-    for key2, value2 in value1.items():
-        print(key2 + " " + str(value2))
+#         if trunc != -1 and trunc != 0:
+#             gt_trunc_stats[name].append(trunc)
+#             gt_trunc_stats["ALL"].append(trunc)
+
+#     count +=1
+#     f.close()
+#     print("{} : {}".format(total,count), end ='\r')
+
+for key1, value1 in gt_conf_stats.items():
+    print(key1 + " " + str(len(value1)))
 
 for key, value in gt_conf_stats.items():
     # print(key + " " + str(value))
@@ -140,7 +164,9 @@ for key, value in gt_conf_stats.items():
     arr = numpy.array(value)
     plt.hist(arr, bins=50)
     plt.gca().set(title='Conf Histogram of {}'.format(key), ylabel='Frequency')
-    plt.show()
+    filename = output_folder + "\\CONF_{}_{}.png".format(key.upper(), tag)
+    plt.savefig(filename)
+    plt.close()
 
 for key, value in gt_occ_stats.items():
     # print(key + " " + str(value))
@@ -150,7 +176,10 @@ for key, value in gt_occ_stats.items():
     arr = numpy.array(value)
     plt.hist(arr, bins=50)
     plt.gca().set(title='Occ Histogram of {}'.format(key), ylabel='Frequency')
-    plt.show()
+    filename = output_folder + "\\OCC_{}_{}.png".format(key.upper(), tag)
+    plt.savefig(filename)
+    plt.close()
+
 
 for key, value in gt_trunc_stats.items():
     # print(key + " " + str(value))
@@ -160,10 +189,22 @@ for key, value in gt_trunc_stats.items():
     arr = numpy.array(value)
     plt.hist(arr, bins=50)
     plt.gca().set(title='Trunc Histogram of {}'.format(key), ylabel='Frequency')
-    plt.show()
+    filename = output_folder + "\\TRUNC_{}_{}.png".format(key.upper(), tag)
+    plt.savefig(filename)
+    plt.close()
+
 
 #write stats to file
-with open(r'C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\statistics\trunc.txt', 'w') as f:
+with open(output_folder + "\\conf.txt", 'w') as f:
+    for key, value in gt_conf_stats.items():
+        f.write("%s\n" % key)
+        for item in value:
+            f.write("%s," % item)
+        f.write("\n")
+    f.close()
+
+
+with open(output_folder + "\\trunc.txt", 'w') as f:
     for key, value in gt_trunc_stats.items():
         f.write("%s\n" % key)
         for item in value:
@@ -171,7 +212,7 @@ with open(r'C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\statistics\tru
         f.write("\n")
     f.close()
 
-with open(r'C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\statistics\occ.txt', 'w') as f:
+with open(output_folder + "\\occ.txt", 'w') as f:
     for key, value in gt_occ_stats.items():
         f.write("%s\n" % key)
         for item in value:
@@ -179,13 +220,6 @@ with open(r'C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\statistics\occ
         f.write("\n")
     f.close()
 
-with open(r'C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\statistics\conf.txt', 'w') as f:
-    for key, value in gt_conf_stats.items():
-        f.write("%s\n" % key)
-        for item in value:
-            f.write("%s," % item)
-        f.write("\n")
-    f.close()
 
 
 
