@@ -82,9 +82,9 @@ if type(args.mf) == type(None):
     # tag = "conf_only"
 
 
-    main_folder = r"C:\Users\Yoseop\Desktop\Personal\OD_Work\ZF\Softlabel\prefix_0.3_eval\Eval"
-    output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\\prefix_0.3_model_output"
-    tag = "0_3"
+    main_folder = r"D:\Softlabel\postfix_size_fullrange\Eval"
+    output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\\postfix_size_model_output"
+    tag = "size_post"
 
     # main_folder = r"Z:\seongjin.lee\eval\M551_improvement\original\final"
     # output_folder = "C:\\Users\\Yoseop\\Desktop\\Personal\\OD_Work\\ZF\\Softlabel\\statistics\original_model_output"
