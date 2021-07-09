@@ -43,7 +43,7 @@ index=0
 modified=0
 foundCnt={}
 
-with open(os.path.join(main_folder, os.path.join("ImageSets", 'rider_dir.txt'))) as f:
+with open(os.path.join(main_folder, os.path.join("ImageSets", 'all.txt'))) as f:
     lines = f.readlines()
     for imageName in lines:
         # print(line)

@@ -25,7 +25,7 @@ xml_type = args.type
 main_folder = args.mf
 obj_name = args.cls
 
-annotation_folder_name = "Annotations_SOD_ALT"
+annotation_folder_name = "Annotations"
 img_folder_name = "JPEGImages"
 img_ext =".jpg"
 
